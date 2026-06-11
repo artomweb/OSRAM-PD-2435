@@ -1,0 +1,64 @@
+esphome:
+  name: pd-display-s3
+  friendly_name: PD Display S3
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
+
+# logger:
+# wifi:
+#   ssid: !secret wifi_ssid
+#   password: !secret wifi_password
+#   ap:
+#     ssid: "PD Display Fallback"
+#     password: "pddisplay"
+
+# captive_portal:
+# api:
+#   encryption:
+#     key: !secret api_encryption_key
+# ota:
+#   platform: esphome
+#   password: !secret ota_password
+
+# Pull in your custom external component
+external_components:
+  - source:
+      type: local
+      path: components
+
+pd_display:
+  id: my_pd_display
+  scroll_ms: 300
+  # Explicitly mapped to safe, sequential pins on the S3
+  data_pins:
+    - GPIO1 # D0
+    - GPIO2 # D1
+    - GPIO4 # D2
+    - GPIO5 # D3
+    - GPIO6 # D4
+    - GPIO7 # D5
+    - GPIO15 # D6
+    - GPIO16 # D7
+  a0_pin: GPIO17
+  a1_pin: GPIO18
+  a2_pin: GPIO8
+  ce0_pin: GPIO3
+  wr_pin: GPIO9
+  rst_pin: GPIO10
+
+text:
+  - platform: template
+    id: display_text
+    name: "Display Text"
+    optimistic: true
+    min_length: 0
+    max_length: 128
+    mode: text
+    initial_value: "S3!!"
+    on_value:
+      then:
+        - lambda: |-
+            id(my_pd_display).set_message(x);
