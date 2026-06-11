@@ -7,7 +7,7 @@
 #include "esphome/core/hal.h"
 
 namespace esphome {
-namespace PD_display {
+namespace pd_display {
 
 class PDDisplayComponent : public Component {
    public:

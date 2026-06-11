@@ -3,9 +3,9 @@
 #include "esphome/core/log.h"
 
 namespace esphome {
-namespace PD_display {
+namespace pd_display {
 
-static const char* const TAG = "PD_display";
+static const char* const TAG = "pd_display";
 
 void PDDisplayComponent::setup() {
     ESP_LOGCONFIG(TAG, "Setting up PD Display...");

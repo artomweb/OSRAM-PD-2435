@@ -5,7 +5,7 @@ from esphome.const import CONF_ID
 
 DEPENDENCIES = []
 
-PD_display_ns = cg.esphome_ns.namespace("PD_display")
+PD_display_ns = cg.esphome_ns.namespace("pd_display")
 PDDisplayComponent = PD_display_ns.class_("PDDisplayComponent", cg.Component)
 
 CONF_DATA_PINS = "data_pins"
