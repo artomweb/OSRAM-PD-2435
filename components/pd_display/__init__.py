@@ -7,6 +7,13 @@ DEPENDENCIES = []
 
 PD_display_ns = cg.esphome_ns.namespace("pd_display")
 PDDisplayComponent = PD_display_ns.class_("PDDisplayComponent", cg.Component)
+Align = PD_display_ns.enum("Align", is_class=True)
+
+ALIGNS = {
+    "left": Align.LEFT,
+    "center": Align.CENTER,
+    "right": Align.RIGHT,
+}
 
 CONF_DATA_PINS = "data_pins"
 CONF_A0_PIN = "a0_pin"
@@ -16,6 +23,7 @@ CONF_CE0_PIN = "ce0_pin"
 CONF_WR_PIN = "wr_pin"
 CONF_RST_PIN = "rst_pin"
 CONF_SCROLL_MS = "scroll_ms"
+CONF_ALIGN = "align"
 
 CONFIG_SCHEMA = cv.Schema(
     {
@@ -30,6 +38,7 @@ CONFIG_SCHEMA = cv.Schema(
         cv.Required(CONF_WR_PIN): pins.gpio_output_pin_schema,
         cv.Required(CONF_RST_PIN): pins.gpio_output_pin_schema,
         cv.Optional(CONF_SCROLL_MS, default=300): cv.positive_int,
+        cv.Optional(CONF_ALIGN, default="left"): cv.enum(ALIGNS, lower=True),
     }
 ).extend(cv.COMPONENT_SCHEMA)
 
@@ -58,3 +67,4 @@ async def to_code(config):
         cg.add(setter(pin))
 
     cg.add(var.set_scroll_ms(config[CONF_SCROLL_MS]))
+    cg.add(var.set_align(config[CONF_ALIGN]))

@@ -9,6 +9,9 @@
 namespace esphome {
 namespace pd_display {
 
+// Position of messages short enough to fit without scrolling
+enum class Align { LEFT, CENTER, RIGHT };
+
 class PDDisplayComponent : public Component {
    public:
     void set_data_pins(std::vector<GPIOPin*> pins) { data_pins_ = pins; }
@@ -27,6 +30,8 @@ class PDDisplayComponent : public Component {
 
     void set_message(const std::string& msg);
     void set_brightness(uint8_t level);
+    void set_align(Align align);
+    void set_align(const std::string& align);
 
    private:
     void set_data_bus(uint8_t val);
@@ -46,6 +51,7 @@ class PDDisplayComponent : public Component {
     GPIOPin* pin_rst_{nullptr};
 
     uint32_t scroll_ms_{300};
+    Align align_{Align::LEFT};
     std::string message_;
     std::string padded_;
     bool message_changed_{false};

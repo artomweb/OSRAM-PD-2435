@@ -1,5 +1,7 @@
 #include "pd_display.h"
 
+#include <strings.h>
+
 #include "esphome/core/log.h"
 
 namespace esphome {
@@ -122,6 +124,10 @@ void PDDisplayComponent::setup() {
 void PDDisplayComponent::dump_config() {
     ESP_LOGCONFIG(TAG, "PD Display:");
     ESP_LOGCONFIG(TAG, "  Scroll Interval: %u ms", (unsigned)this->scroll_ms_);
+    ESP_LOGCONFIG(TAG, "  Align: %s",
+                  this->align_ == Align::RIGHT    ? "right"
+                  : this->align_ == Align::CENTER ? "center"
+                                                  : "left");
     ESP_LOGCONFIG(TAG, "  Data Pins (D0-D7):");
     for (auto* pin : this->data_pins_) {
         LOG_PIN("    ", pin);
@@ -142,7 +148,14 @@ void PDDisplayComponent::loop() {
         // Messages that fit on the display are shown without scrolling
         if (this->message_.size() <= 4) {
             this->padded_.clear();
-            this->write_display(this->message_.data(), this->message_.size());
+            std::string frame = this->message_;
+            size_t gap = 4 - frame.size();
+            if (this->align_ == Align::RIGHT) {
+                frame.insert(0, gap, ' ');
+            } else if (this->align_ == Align::CENTER) {
+                frame.insert(0, gap / 2, ' ');
+            }
+            this->write_display(frame.data(), frame.size());
             return;
         }
 
@@ -186,6 +199,25 @@ void PDDisplayComponent::set_message(const std::string& msg) {
 
     this->message_ = codes;
     this->message_changed_ = true;
+}
+
+void PDDisplayComponent::set_align(Align align) {
+    if (align == this->align_) return;
+    this->align_ = align;
+    // Redraw the current message in its new position
+    this->message_changed_ = true;
+}
+
+void PDDisplayComponent::set_align(const std::string& align) {
+    if (strcasecmp(align.c_str(), "left") == 0) {
+        this->set_align(Align::LEFT);
+    } else if (strcasecmp(align.c_str(), "center") == 0) {
+        this->set_align(Align::CENTER);
+    } else if (strcasecmp(align.c_str(), "right") == 0) {
+        this->set_align(Align::RIGHT);
+    } else {
+        ESP_LOGW(TAG, "Unknown align '%s', expected left, center or right", align.c_str());
+    }
 }
 
 void PDDisplayComponent::set_brightness(uint8_t level) {
