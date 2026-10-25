@@ -38,7 +38,7 @@ void PDDisplayComponent::setup() {
 
     this->clear_display();
     this->init_display();
-    this->set_message("HELO");
+    this->set_message("HELLO");
 }
 
 void PDDisplayComponent::loop() {
@@ -71,7 +71,8 @@ void PDDisplayComponent::set_message(const std::string& msg) {
 }
 
 void PDDisplayComponent::set_brightness(uint8_t level) {
-    uint8_t cmd = 0x03 | ((level & 0x03) << 4);
+    // Control word D1:D0 = brightness (0 blank, 1 25%, 2 50%, 3 100%)
+    uint8_t cmd = level & 0x03;
     this->write_raw(false, 0, cmd);
     delay(5);
 }

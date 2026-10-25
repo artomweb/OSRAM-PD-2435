@@ -1,0 +1,43 @@
+esphome:
+  name: pd-display
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+
+# Tell ESPHome to read from your local custom_components directory
+external_components:
+  - source:
+      type: local
+      path: components
+
+# Instantiate your component using the schema you created
+pd_display:
+  id: my_pd_display
+  scroll_ms: 300
+  data_pins:
+    - GPIO13
+    - GPIO14
+    - GPIO16
+    - GPIO17
+    - GPIO18
+    - GPIO19
+    - GPIO21
+    - GPIO22
+  a0_pin: GPIO23
+  a1_pin: GPIO25
+  a2_pin: GPIO26
+  ce0_pin: GPIO27
+  wr_pin: GPIO32
+  rst_pin: GPIO33
+
+text_sensor:
+  - platform: template
+    name: "Display Message Source"
+    on_value:
+      then:
+        - lambda: |-
+            id(my_pd_display).set_message(x);
