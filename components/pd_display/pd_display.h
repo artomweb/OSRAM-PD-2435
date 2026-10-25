@@ -35,7 +35,7 @@ class PDDisplayComponent : public Component {
     void init_display();
     void clear_display();
     void put_char(int pos, char ch);
-    void write_display(const char* input);
+    void write_display(const char* chars, size_t len);
 
     std::vector<GPIOPin*> data_pins_;
     GPIOPin* pin_a0_{nullptr};
