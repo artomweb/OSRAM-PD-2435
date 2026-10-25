@@ -1,5 +1,7 @@
 #include "pd_display.h"
 
+#include <cstring>
+
 #include "esphome/core/log.h"
 
 namespace esphome {
@@ -41,18 +43,43 @@ void PDDisplayComponent::setup() {
     this->set_message("HELLO");
 }
 
+void PDDisplayComponent::dump_config() {
+    ESP_LOGCONFIG(TAG, "PD Display:");
+    ESP_LOGCONFIG(TAG, "  Scroll Interval: %u ms", (unsigned)this->scroll_ms_);
+    ESP_LOGCONFIG(TAG, "  Data Pins (D0-D7):");
+    for (auto* pin : this->data_pins_) {
+        LOG_PIN("    ", pin);
+    }
+    LOG_PIN("  A0 Pin: ", this->pin_a0_);
+    LOG_PIN("  A1 Pin: ", this->pin_a1_);
+    LOG_PIN("  A2 Pin: ", this->pin_a2_);
+    LOG_PIN("  CE0 Pin: ", this->pin_ce0_);
+    LOG_PIN("  WR Pin: ", this->pin_wr_);
+    LOG_PIN("  RST Pin: ", this->pin_rst_);
+}
+
 void PDDisplayComponent::loop() {
-    if (this->message_.empty()) return;
+    if (this->message_changed_) {
+        this->message_changed_ = false;
+        this->scroll_pos_ = 0;
+
+        // Messages that fit on the display are shown without scrolling
+        if (this->message_.size() <= 4) {
+            this->padded_.clear();
+            this->write_display(this->message_.c_str());
+            return;
+        }
+
+        this->padded_ = "    " + this->message_ + "    ";
+        // Show the first frame now rather than after one scroll interval
+        this->last_scroll_ms_ = millis() - this->scroll_ms_;
+    }
+
+    if (this->padded_.empty()) return;
 
     uint32_t now = millis();
     if (now - this->last_scroll_ms_ < this->scroll_ms_) return;
     this->last_scroll_ms_ = now;
-
-    if (this->message_changed_) {
-        this->padded_ = "    " + this->message_ + "    ";
-        this->scroll_pos_ = 0;
-        this->message_changed_ = false;
-    }
 
     if (this->scroll_pos_ + 4 <= (int)this->padded_.size()) {
         char frame[5];
@@ -66,7 +93,20 @@ void PDDisplayComponent::loop() {
 }
 
 void PDDisplayComponent::set_message(const std::string& msg) {
-    this->message_ = msg;
+    // The character ROM is 7-bit ASCII and D7 on a digit enables its
+    // attribute, so replace each multi-byte UTF-8 character with '?'
+    std::string clean;
+    clean.reserve(msg.size());
+    for (unsigned char c : msg) {
+        if (c < 0x80) {
+            clean += (char)c;
+        } else if (c >= 0xC0) {
+            clean += '?';
+        }
+        // 0x80-0xBF are UTF-8 continuation bytes, skip them
+    }
+
+    this->message_ = clean;
     this->message_changed_ = true;
 }
 
@@ -129,5 +169,5 @@ void PDDisplayComponent::write_display(const char* input) {
     this->put_char(0, buf[3]);
 }
 
-}  // namespace PD_display
+}  // namespace pd_display
 }  // namespace esphome

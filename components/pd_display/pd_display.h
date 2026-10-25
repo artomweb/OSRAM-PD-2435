@@ -22,6 +22,7 @@ class PDDisplayComponent : public Component {
 
     float get_setup_priority() const override { return setup_priority::HARDWARE; }
     void setup() override;
+    void dump_config() override;
     void loop() override;
 
     void set_message(const std::string& msg);
@@ -52,5 +53,5 @@ class PDDisplayComponent : public Component {
     uint32_t last_scroll_ms_{0};
 };
 
-}  // namespace PD_display
+}  // namespace pd_display
 }  // namespace esphome
